@@ -3,14 +3,19 @@ mod models;
 
 use anyhow::Result;
 use dotenv::dotenv;
+use tokio::runtime;  // ← Add this import
 
-#[tokio::main]
-async fn main() -> Result<()> {
+fn main() -> Result<()> {  // ← Remove 'async' and '#[tokio::main]'
     dotenv().ok();
     println!("🚀 Setting up Zenith database...");
-    
-    db::setup().await?;
-    
+
+    // Create a runtime and block on the async function
+    let rt = runtime::Runtime::new()?;
+    rt.block_on(async {
+        db::setup().await?;
+        Ok::<_, anyhow::Error>(())
+    })?;
+
     println!("✅ Database setup complete!");
     Ok(())
 }
